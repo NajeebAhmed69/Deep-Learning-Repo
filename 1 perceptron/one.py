@@ -1,82 +1,44 @@
+from sklearn.datasets import make_classification
 import numpy as np
 
+X, y = make_classification(n_samples=100, n_features=2, n_informative=1,n_redundant=0,
+                           n_classes=2, n_clusters_per_class=1, random_state=41,hypercube=False,class_sep=10)
 
-class Perceptron:
-    def __init__(self, learning_rate=0.1, epochs=20):
-        self.learning_rate = learning_rate
-        self.epochs = epochs
-        self.weights = None
-        self.bias = 0.0
-        self.errors_per_epoch = []
+import matplotlib.pyplot as plt
+plt.figure(figsize=(10,6))
+plt.scatter(X[:,0],X[:,1],c=y,cmap='winter',s=100)
+# plt.show()
 
-    def activation(self, z):
-        # Unit-step activation function
-        return np.where(z >= 0, 1, 0)
-
-    def predict(self, X):
-        X = np.asarray(X)
-        weighted_sum = np.dot(X, self.weights) + self.bias
-        return self.activation(weighted_sum)
-
-    def fit(self, X, y):
-        X = np.asarray(X, dtype=float)
-        y = np.asarray(y)
-
-        # One weight per input feature
-        self.weights = np.zeros(X.shape[1])
-        self.bias = 0.0
-
-        for _ in range(self.epochs):
-            errors = 0
-
-            for x_i, target in zip(X, y):
-                prediction = self.predict(x_i)
-
-                # Perceptron update
-                update = self.learning_rate * (target - prediction)
-
-                self.weights += update * x_i
-                self.bias += update
-
-                if update != 0:
-                    errors += 1
-
-            self.errors_per_epoch.append(errors)
-
-            # Stop early when every training example is classified correctly
-            if errors == 0:
-                break
-
-        return self
+def perceptron(X,y):
+    X=np.insert(X,0,1,axis=1)
+    weights=np.ones(X.shape[1])
+    lr=0.1
     
-    
-    
-    
-    # Inputs: x1, x2
-X = np.array([
-    [0, 0],
-    [0, 1],
-    [1, 0],
-    [1, 1]
-])
+    for i in range(1000):
+        j = np.random.randint(0,100)
+        y_hat = step(np.dot(X[j],weights))
+        weights = weights + lr*(y[j]-y_hat)*X[j]
+        
+    return weights[0],weights[1:]
 
-# AND labels
-y = np.array([0, 0, 0, 1])
-
-model = Perceptron(learning_rate=0.1, epochs=20)
-model.fit(X, y)
-
-predictions = model.predict(X)
-
-print("Predictions:", predictions)
-print("Actual labels:", y)
-print("Learned weights:", model.weights)
-print("Learned bias:", model.bias)
-print("Errors per epoch:", model.errors_per_epoch)
+def step(z):
+    return 1 if z>0 else 0
 
 
-new_input = np.array([[1, 0]])
+intercept_,coef_ = perceptron(X,y)
 
-prediction = model.predict(new_input)[0]
+print(coef_)
+print(intercept_)
 
-print("Prediction for [1, 0]:", prediction)
+m = -(coef_[0]/coef_[1])
+b = -(intercept_/coef_[1])
+
+x_input = np.linspace(-3,3,100)
+y_input = m*x_input + b
+
+
+plt.figure(figsize=(10,6))
+plt.plot(x_input,y_input,color='red',linewidth=3)
+plt.scatter(X[:,0],X[:,1],c=y,cmap='winter',s=100)
+plt.ylim(-3,2)
+plt.show()
