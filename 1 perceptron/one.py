@@ -1,3 +1,4 @@
+# separate two groups of data using a perceptron
 from sklearn.datasets import make_classification
 import numpy as np
 
